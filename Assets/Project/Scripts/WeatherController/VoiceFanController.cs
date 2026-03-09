@@ -3,16 +3,23 @@ using UnityEngine.Windows.Speech;
 
 public class VoiceFanController : MonoBehaviour
 {
-    [Header("Fan Control")]
+    [Header("Controllers")]
     public FanSerialController fanController;
+    public RainController rainController;
 
     [Header("Debug")]
     public bool autoRestartDictation = true;
     public bool enableDebugLog = true;
 
-    [Header("Voice Command PWM")]
+    [Header("Default Wind PWM")]
     public int startPwm = 200;
     public int stopPwm = 0;
+    public int lightWindPwm = 120;
+    public int strongWindPwm = 200;
+    public int maxWindPwm = 255;
+
+    [Header("Rain-Wind Link")]
+    public bool enableRainWindLink = true;
 
     private DictationRecognizer dictationRecognizer;
     private bool isRestarting = false;
@@ -42,8 +49,8 @@ public class VoiceFanController : MonoBehaviour
         }
 
         dictationRecognizer = new DictationRecognizer();
-        dictationRecognizer.InitialSilenceTimeoutSeconds = 5f;
-        dictationRecognizer.AutoSilenceTimeoutSeconds = 3f;
+        dictationRecognizer.InitialSilenceTimeoutSeconds = 1f;
+        dictationRecognizer.AutoSilenceTimeoutSeconds = 0.8f;
 
         dictationRecognizer.DictationHypothesis += OnDictationHypothesis;
         dictationRecognizer.DictationResult += OnDictationResult;
@@ -67,55 +74,140 @@ public class VoiceFanController : MonoBehaviour
         DebugLog("Hypothesis: " + text);
     }
 
-private void OnDictationResult(string text, ConfidenceLevel confidence)
-{
-    DebugLog("Result: " + text + " | Confidence: " + confidence);
-
-    if (string.IsNullOrEmpty(text))
-        return;
-
-    string normalized = text.Replace(" ", "");
-
-    // ===== 停止 =====
-    if (normalized.Contains("停") || normalized.Contains("关"))
+    private void OnDictationResult(string text, ConfidenceLevel confidence)
     {
-        DebugLog("Command: STOP");
-        fanController.SetPwm(0);
-        return;
+        DebugLog("Result: " + text + " | Confidence: " + confidence);
+
+        if (string.IsNullOrEmpty(text))
+            return;
+
+        string normalized = NormalizeText(text);
+        DebugLog("Normalized: " + normalized);
+
+        // ===== 雨控制（带联动） =====
+        if (rainController != null)
+        {
+            if (normalized.Contains("晴") || normalized.Contains("雨停") || normalized.Contains("不要下雨"))
+            {
+                rainController.SetRainOff();
+                DebugLog("Command: Rain OFF");
+
+                if (enableRainWindLink)
+                {
+                    fanController.SetPwm(0);
+                    DebugLog("Rain-Wind Link: Wind OFF");
+                }
+                return;
+            }
+
+            if (normalized.Contains("暴雨") || normalized.Contains("很大雨"))
+            {
+                rainController.SetRainVeryHeavy();
+                DebugLog("Command: Rain VERY HEAVY");
+
+                if (enableRainWindLink)
+                {
+                    fanController.SetPwm(maxWindPwm);
+                    DebugLog("Rain-Wind Link: Wind MAX");
+                }
+                return;
+            }
+
+            if (normalized.Contains("大雨"))
+            {
+                rainController.SetRainHeavy();
+                DebugLog("Command: Rain HEAVY");
+
+                if (enableRainWindLink)
+                {
+                    fanController.SetPwm(strongWindPwm);
+                    DebugLog("Rain-Wind Link: Wind STRONG");
+                }
+                return;
+            }
+
+            if (normalized.Contains("中雨") || normalized.Contains("下雨"))
+            {
+                rainController.SetRainMedium();
+                DebugLog("Command: Rain MEDIUM");
+
+                if (enableRainWindLink)
+                {
+                    fanController.SetPwm(startPwm);
+                    DebugLog("Rain-Wind Link: Wind START");
+                }
+                return;
+            }
+
+            if (normalized.Contains("小雨"))
+            {
+                rainController.SetRainLight();
+                DebugLog("Command: Rain LIGHT");
+
+                if (enableRainWindLink)
+                {
+                    fanController.SetPwm(lightWindPwm);
+                    DebugLog("Rain-Wind Link: Wind LIGHT");
+                }
+                return;
+            }
+        }
+
+        // ===== 单独风控制（优先级放在雨控制后面，这样你仍然可以单独改风） =====
+        if (normalized.Contains("停") || normalized.Contains("关风") || normalized.Contains("关闭风"))
+        {
+            fanController.SetPwm(0);
+            DebugLog("Command: Wind STOP");
+            return;
+        }
+
+        if (normalized.Contains("最大风") || normalized.Contains("最强风") || normalized.Contains("风最大"))
+        {
+            fanController.SetPwm(maxWindPwm);
+            DebugLog("Command: Wind MAX");
+            return;
+        }
+
+        if (normalized.Contains("大风") || normalized.Contains("强风") || normalized.Contains("风大一点") || normalized.Contains("风强一点"))
+        {
+            fanController.SetPwm(strongWindPwm);
+            DebugLog("Command: Wind STRONG");
+            return;
+        }
+
+        if (normalized.Contains("小风") || normalized.Contains("微风") || normalized.Contains("风小一点"))
+        {
+            fanController.SetPwm(lightWindPwm);
+            DebugLog("Command: Wind LIGHT");
+            return;
+        }
+
+        if (normalized.Contains("开始吹风") || normalized.Contains("开风") || normalized.Contains("吹风"))
+        {
+            fanController.SetPwm(startPwm);
+            DebugLog("Command: Wind START");
+            return;
+        }
+
+        DebugLog("没有匹配到命令");
     }
 
-    // ===== 最大风 =====
-    if (normalized.Contains("最大") || normalized.Contains("最强"))
+    private string NormalizeText(string text)
     {
-        DebugLog("Command: MAX WIND");
-        fanController.SetPwm(255);
-        return;
-    }
+        if (string.IsNullOrEmpty(text)) return "";
 
-    // ===== 大风 =====
-    if (normalized.Contains("大") || normalized.Contains("强"))
-    {
-        DebugLog("Command: STRONG WIND");
-        fanController.SetPwm(200);
-        return;
+        return text
+            .Replace(" ", "")
+            .Replace("。", "")
+            .Replace("，", "")
+            .Replace(",", "")
+            .Replace(".", "")
+            .Replace("！", "")
+            .Replace("?", "")
+            .Replace("？", "")
+            .Replace("\n", "")
+            .Replace("\r", "");
     }
-
-    // ===== 小风 =====
-    if (normalized.Contains("小") || normalized.Contains("微"))
-    {
-        DebugLog("Command: LIGHT WIND");
-        fanController.SetPwm(120);
-        return;
-    }
-
-    // ===== 启动 =====
-    if (normalized.Contains("开") || normalized.Contains("开始") || normalized.Contains("吹"))
-    {
-        DebugLog("Command: START");
-        fanController.SetPwm(startPwm);
-        return;
-    }
-}
 
     private void OnDictationComplete(DictationCompletionCause cause)
     {
@@ -124,15 +216,6 @@ private void OnDictationResult(string text, ConfidenceLevel confidence)
         if (!autoRestartDictation) return;
         if (!gameObject.activeInHierarchy) return;
         if (isRestarting) return;
-
-        // 正常情况下有时会自己结束，这里自动重启
-        if (cause != DictationCompletionCause.Complete &&
-            cause != DictationCompletionCause.TimeoutExceeded &&
-            cause != DictationCompletionCause.PauseLimitExceeded)
-        {
-            RestartDictation();
-            return;
-        }
 
         RestartDictation();
     }
