@@ -100,7 +100,7 @@ public class VoiceFanController : MonoBehaviour
                 return;
             }
 
-            if (normalized.Contains("暴雨") || normalized.Contains("很大雨"))
+            if (normalized.Contains("暴雨") || normalized.Contains("大暴雨"))
             {
                 rainController.SetRainVeryHeavy();
                 DebugLog("Command: Rain VERY HEAVY");
@@ -154,7 +154,7 @@ public class VoiceFanController : MonoBehaviour
         }
 
         // ===== 单独风控制（优先级放在雨控制后面，这样你仍然可以单独改风） =====
-        if (normalized.Contains("停") || normalized.Contains("关风") || normalized.Contains("关闭风"))
+        if (normalized.Contains("停") || normalized.Contains("风停下来") || normalized.Contains("不刮风"))
         {
             fanController.SetPwm(0);
             DebugLog("Command: Wind STOP");

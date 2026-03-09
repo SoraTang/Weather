@@ -1,13 +1,22 @@
 using UnityEngine;
-using UnityEngine.UI;
 using SerialPortUtility;
 
 public class FanSerialController : MonoBehaviour
 {
+    [Header("Serial")]
     public SerialPortUtilityPro serialPort;
-    public Slider pwmSlider;
+
+    [Header("PWM Settings")]
+    public int minPwm = 0;
+    public int maxPwm = 255;
+    public int minSendDelta = 2;
+
+    [Header("Safety")]
+    public bool stopFanWhenDisable = true;
+    public bool closePortWhenDisable = true;
 
     private int lastValue = -999;
+    private bool isShuttingDown = false;
 
     void Start()
     {
@@ -16,40 +25,98 @@ public class FanSerialController : MonoBehaviour
             serialPort = GetComponent<SerialPortUtilityPro>();
         }
 
-        if (pwmSlider != null)
+        if (serialPort == null)
         {
-            pwmSlider.minValue = 0;
-            pwmSlider.maxValue = 255;
-            pwmSlider.wholeNumbers = true;
-            pwmSlider.onValueChanged.AddListener(OnSliderChanged);
+            Debug.LogError("FanSerialController: SerialPortUtilityPro not found.");
         }
-    }
-
-    void OnSliderChanged(float value)
-    {
-        SetPwm(Mathf.RoundToInt(value));
     }
 
     public void SetPwm(int pwm)
     {
-        pwm = Mathf.Clamp(pwm, 0, 255);
+        if (isShuttingDown) return;
 
-        if (Mathf.Abs(pwm - lastValue) < 2) return;
+        pwm = Mathf.Clamp(pwm, minPwm, maxPwm);
+
+        if (Mathf.Abs(pwm - lastValue) < minSendDelta)
+            return;
+
         lastValue = pwm;
 
-        if (pwmSlider != null && Mathf.RoundToInt(pwmSlider.value) != pwm)
+        SendPwmInternal(pwm);
+    }
+
+    private void SendPwmInternal(int pwm)
+    {
+        if (serialPort == null)
         {
-            pwmSlider.SetValueWithoutNotify(pwm);
+            Debug.LogWarning("Serial port component missing.");
+            return;
         }
 
-        if (serialPort != null && serialPort.IsOpened())
+        if (!serialPort.IsOpened())
+        {
+            Debug.LogWarning("Serial port is not opened.");
+            return;
+        }
+
+        try
         {
             serialPort.WriteCRLF(pwm.ToString());
             Debug.Log("Send PWM: " + pwm);
         }
-        else
+        catch (System.Exception e)
         {
-            Debug.LogWarning("Serial port is not opened.");
+            Debug.LogWarning("Serial write failed: " + e.Message);
         }
+    }
+
+    private void SafeShutdown()
+    {
+        if (isShuttingDown) return;
+        isShuttingDown = true;
+
+        if (serialPort != null && serialPort.IsOpened())
+        {
+            try
+            {
+                if (stopFanWhenDisable)
+                {
+                    serialPort.WriteCRLF("0");
+                    Debug.Log("Send PWM: 0 (shutdown)");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Shutdown PWM failed: " + e.Message);
+            }
+
+            try
+            {
+                if (closePortWhenDisable)
+                {
+                    serialPort.Close();
+                    Debug.Log("Serial port closed safely.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Serial close failed: " + e.Message);
+            }
+        }
+    }
+
+    void OnDisable()
+    {
+        SafeShutdown();
+    }
+
+    void OnDestroy()
+    {
+        SafeShutdown();
+    }
+
+    void OnApplicationQuit()
+    {
+        SafeShutdown();
     }
 }
