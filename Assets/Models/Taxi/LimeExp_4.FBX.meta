@@ -1,0 +1,829 @@
+fileFormatVersion: 2
+guid: 6f7389e0dc793da4a9dab1542e20b8c3
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._02 - Default
+    second: {fileID: 2100000, guid: 9afaaa3d43a3ff547afe521677238147, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._18 - Default
+    second: {fileID: 2100000, guid: 4c0663a5676bf4f428e3dfbf6ae52068, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._24 - Default
+    second: {fileID: 2100000, guid: 558e111cb470db04c89542363e1cb7f2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Brake
+    second: {fileID: 2100000, guid: 5dd9e0631cd2e3e408943b0fe2105e85, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Everlogo
+    second: {fileID: 2100000, guid: 707e4e1722bab4d4b84f485f9eea7661, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Interior_Plas3
+    second: {fileID: 2100000, guid: 4bdb9d59876612240b7663add5b72dd2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Interior_plas
+    second: {fileID: 2100000, guid: 817664e1e40ec1949bd5b3dc86a8b5ee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Mirror
+    second: {fileID: 2100000, guid: d4a9efe0535a5e64bb35ab1f8d769fc7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_Wire
+    second: {fileID: 2100000, guid: 966e66dee9b460f419ba2a4c05af274f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_black_plastic
+    second: {fileID: 2100000, guid: 3977dae369509494e85d508a6facd30a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_carpaint
+    second: {fileID: 2100000, guid: fd2dad93527ad3540abcd27bf0d3966a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_chrome
+    second: {fileID: 2100000, guid: af9571956ec7a0e489905692daa3d830, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_chrome2
+    second: {fileID: 2100000, guid: 5ea915d8bbb43ee4990f6ab2e35f3b7d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_chrome_stripes
+    second: {fileID: 2100000, guid: b267c79ece2a7ee4581a9a8fc25ba45b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_glass
+    second: {fileID: 2100000, guid: 803c8f3535b90284897f1e66166a27fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_glass orange3
+    second: {fileID: 2100000, guid: 72a6257ddb004c64cb4a3e2ec6c59be9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_glass_black
+    second: {fileID: 2100000, guid: 16b6cdc4021ac7144a65474340f09ee1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_ms1
+    second: {fileID: 2100000, guid: afa8aa0720b188e4589c80b860d75ff7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_plastic_red
+    second: {fileID: 2100000, guid: d03c6a2beb1efed48ac756daf53a029b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_rotor
+    second: {fileID: 2100000, guid: 405b6a5703f1b0545b670d83c8571f7a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_rubber
+    second: {fileID: 2100000, guid: 9b124d8fa490ab54eb5500e564b9f397, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_speedometer
+    second: {fileID: 2100000, guid: 2758f2b1f414fb245aea0162db5bc425, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_012_tire
+    second: {fileID: 2100000, guid: 6ecbcdadc2c6b3847bc18934849ccca3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_ chrome_squares
+    second: {fileID: 2100000, guid: 2a865906504d3ff4ab651d14a306db3b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_Spedo
+    second: {fileID: 2100000, guid: 0324cc1cb182f714c809546a76c64a08, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_Spedo2
+    second: {fileID: 2100000, guid: 685d0da738500e44690bad0f8eb38ed7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_carpaint
+    second: {fileID: 2100000, guid: b0fe570aedb2c11439ef1b4710a0d0ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_chrome_stripes
+    second: {fileID: 2100000, guid: bc00857965a372748a58443b63a592cb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_glass
+    second: {fileID: 2100000, guid: 160f3614975619c4da88c77e63ee1e3e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_glass orange3
+    second: {fileID: 2100000, guid: 04bd0d3eff7e83a4d868102081d642cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_glass_white
+    second: {fileID: 2100000, guid: a00a104e54fdfd041bb482feca6e9224, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_mirror
+    second: {fileID: 2100000, guid: 0a80eabc243083a4483794ba92c5298e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_rake
+    second: {fileID: 2100000, guid: 7cfa763c07730ff418d27bae35ae6ea6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_rotor
+    second: {fileID: 2100000, guid: 8c33900b36967ac46bda6ac46c59529f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_rubber
+    second: {fileID: 2100000, guid: c46bc6198d862a24c8ddaa58073ced4f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_013_tire
+    second: {fileID: 2100000, guid: 1df8ee2773065d446bc50e05824bfdab, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_Brake
+    second: {fileID: 2100000, guid: c88869e5f49d2394493594bb29782ff4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_EvermotionLogo
+    second: {fileID: 2100000, guid: 1058ce73b9a1c924ebc348ecc0e2da08, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_Plastick
+    second: {fileID: 2100000, guid: 7b4de543dfc382947ac59482add047a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_Speedo
+    second: {fileID: 2100000, guid: 98d8ecf97939c5943804c1b417e098c2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_Speedom1
+    second: {fileID: 2100000, guid: fc4383673dbcf7342bfcebcc74dbd814, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_black_plastic
+    second: {fileID: 2100000, guid: 04f09ee90f8b87446942eb5289fe4bf5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_carpaint
+    second: {fileID: 2100000, guid: 3faeb23b32a304640bd6eeeedd271db0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_chrome
+    second: {fileID: 2100000, guid: 68be52fabfcb85a46ba385eb14a1c0b4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_chrome_squares
+    second: {fileID: 2100000, guid: 3aacb9d989144b34cba763b4b4b9e249, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_chrome_stripes
+    second: {fileID: 2100000, guid: 2b4159ca2629abb46915f3099bbf48e8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_glass
+    second: {fileID: 2100000, guid: c802f981ca12b9849a15d7b69f71fc3a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_glass orange3
+    second: {fileID: 2100000, guid: 837f436d3a8ec1f4cb9066feb64d9aa4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_glass_black
+    second: {fileID: 2100000, guid: 98b25ca15b7f70347a2a8f0612e816ba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_glass_white
+    second: {fileID: 2100000, guid: df655150f3dc95948ad068af86adb556, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_glass_white_stripes
+    second: {fileID: 2100000, guid: 4c07fcc657383fa4f8bf3d09cbe623f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_interior dark
+    second: {fileID: 2100000, guid: 8b5ac46d89036e043a1e1ea2b258824e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_mirror
+    second: {fileID: 2100000, guid: 31f1165804887d842a7977754421f7e0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_plastic_black
+    second: {fileID: 2100000, guid: 56c6a2e2b23ef104cbd1d2f83634a1d7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_rad2
+    second: {fileID: 2100000, guid: 03721ca1130bf384a8709dca7e142ebc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_radio
+    second: {fileID: 2100000, guid: 64727abd22c6c2041a00d1cf79705115, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_red
+    second: {fileID: 2100000, guid: 50e95494b92806c48985db523de580ba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_rim
+    second: {fileID: 2100000, guid: 03f1fb83b83a8a443ab83114d25b22d6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_rotor
+    second: {fileID: 2100000, guid: b5e6f4f830694c24cb8fea068da68a4e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_rubber
+    second: {fileID: 2100000, guid: df64454fc1c876d4a819346d689a720d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_tire
+    second: {fileID: 2100000, guid: 9a6ab9946eebdc84eb62e78f0d8f6cb6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_015_xenon lens
+    second: {fileID: 2100000, guid: a92eafbb19ff2c045b2e4aa97c97325b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_EverLogo
+    second: {fileID: 2100000, guid: d8a13ddf74563614ba88ca3c36f79b82, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_Plastick
+    second: {fileID: 2100000, guid: 1cf5856637dd1544197a541bdaf40681, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_Rim
+    second: {fileID: 2100000, guid: 2475363fbe42b43478b73592ba162961, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_Wire
+    second: {fileID: 2100000, guid: c642846c901341f4183b68c757eab9a4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_black_plastic
+    second: {fileID: 2100000, guid: 147bd7f34eda4a74fae38be84656b7d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_brake_caliper
+    second: {fileID: 2100000, guid: 940097a44d308164f8dd2c90ec4c03eb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_brake_rotor
+    second: {fileID: 2100000, guid: 7bab05fea16cfba48a005582208bba39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_carpaint
+    second: {fileID: 2100000, guid: 3b72b2fb3f0456d46b908107d5e18ae9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_chrome
+    second: {fileID: 2100000, guid: b546b85940c5f244ba1f9c0d354a200f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_chrome_squares
+    second: {fileID: 2100000, guid: 1dd053d0a2a69224487f6108c2827394, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_chrome_stripes
+    second: {fileID: 2100000, guid: a0a5b3615e03e5f47826311948d2e8b3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_glass
+    second: {fileID: 2100000, guid: 08c0e7cb3c2fe5d4d94174e9c5a44427, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_glass orange3
+    second: {fileID: 2100000, guid: 64bedd2361d3bb549836d3e026befa3e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_glass_black
+    second: {fileID: 2100000, guid: 07e3ea2526fa4184f8c9751673b12f5b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_interior dark
+    second: {fileID: 2100000, guid: 7ecfe17f0f0af54498260b58fc031a49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_mirror
+    second: {fileID: 2100000, guid: ba4ea0ec09b2938408fa55641e505c02, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_rubber
+    second: {fileID: 2100000, guid: be9d5d8e6d6e25942b46a31e0ab3618e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_speakers_cover
+    second: {fileID: 2100000, guid: 50035a3afcae97d4f84a4abc49003c1b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_tire
+    second: {fileID: 2100000, guid: b515260edab84c44aa6a6d60651d7e17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM132_016_xenon lens
+    second: {fileID: 2100000, guid: c0c30c615e882a74cabfa4d7ca3b605e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._AM_32_012_rim
+    second: {fileID: 2100000, guid: 552bc57760a7b7e42a3f1e00f96e6557, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_EverLogo
+    second: {fileID: 2100000, guid: ac8648d57bf0b794882cecf7194b560b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_black_plastic
+    second: {fileID: 2100000, guid: 8044d3b1b1342ea4bbb46d013218f681, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_chrome
+    second: {fileID: 2100000, guid: a7a41ffe77fa24b45a274c98f36bab86, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_glass_black
+    second: {fileID: 2100000, guid: c3ef8aaf0335fc640b504066cdbc3810, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_interior dark
+    second: {fileID: 2100000, guid: a619f1afcd9909c46929b06f49a99700, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_interior_light
+    second: {fileID: 2100000, guid: cf5f6341a7442c84e84ce037ad3cc9e9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_rim
+    second: {fileID: 2100000, guid: 3e6f8ef3231309a4291a8f2dbb148c1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Am132_013_silver
+    second: {fileID: 2100000, guid: 3d63bd740c388454fb1a57570f41baec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-10-2159
+    second: {fileID: 2100000, guid: ef68e5aa1d28c5649be8bbfd3b975429, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-11-3264
+    second: {fileID: 2100000, guid: eae694e9e02b5724caeb7f07405b5d27, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-12-2235
+    second: {fileID: 2100000, guid: 39f55611a06942645907553138e9408e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-28-1813
+    second: {fileID: 2100000, guid: cf5e6ba9a39f4d1478d56e5b6b2c1f5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-30-2803
+    second: {fileID: 2100000, guid: 5636a0a7aaefaee4392b26d716e2458b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-32-6971
+    second: {fileID: 2100000, guid: db5c20d881a17ca40a449fc485ffa19a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-33-906
+    second: {fileID: 2100000, guid: a6e71f5bb6382e640b40f5be24f081b7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-34-4909
+    second: {fileID: 2100000, guid: 36ac2d93819687f4c9ee82fd18100e1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-36-6750
+    second: {fileID: 2100000, guid: 2382feb6316cb734a986e556a8b58129, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-37-1427
+    second: {fileID: 2100000, guid: 882a0550ffd011a45a1e2a68c395f7f4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-6-4378
+    second: {fileID: 2100000, guid: f773c1a53f070aa469836dd1753607f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-75-2660
+    second: {fileID: 2100000, guid: 34df1f696662ec14ba2f65920660253d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-76-3123
+    second: {fileID: 2100000, guid: adf8741b412fc7243be36aeff9e0012f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-79-2015
+    second: {fileID: 2100000, guid: 70091df215cc1d642b96b0b8b82718ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-81-3292
+    second: {fileID: 2100000, guid: 0778c8476f0d67b49b92b3845cf765d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-82-5038
+    second: {fileID: 2100000, guid: 682f533cd0753684b9e693d532da390e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-83-316
+    second: {fileID: 2100000, guid: 766bedc90cd59854d81954a541d83ec4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-84-4782
+    second: {fileID: 2100000, guid: 52685a5c92417244f800eea40625161a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-85-7655
+    second: {fileID: 2100000, guid: 78b2dcae911e07c45b3635844ff99e77, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-86-5137
+    second: {fileID: 2100000, guid: 0808f9de7f997934fa58c3bab44ff1de, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-87-7114
+    second: {fileID: 2100000, guid: 796a2c12a7ffacd47807aa81dd6d000a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-88-2035
+    second: {fileID: 2100000, guid: 92b4ff67267f0fb4d8a2b3d43c8b6ae6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-89-9686
+    second: {fileID: 2100000, guid: 0f34a0901f7349a4a88fb54c5cd60b50, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-9-6940
+    second: {fileID: 2100000, guid: 1a3702f6e116b624297804d8326d75ca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-90-1503
+    second: {fileID: 2100000, guid: a180797563b3c9a499bb1a085a721827, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-91-5004
+    second: {fileID: 2100000, guid: 8129645930a4bc84680cf6d1649cdde6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-92-2256
+    second: {fileID: 2100000, guid: 58e6c719e3494784ebe894ac6bc546db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-93-1282
+    second: {fileID: 2100000, guid: 0ed91a33d76228542b1fc117ab0ed50f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-94-2145
+    second: {fileID: 2100000, guid: 862b6577116f8314e894c543897229c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-95-3361
+    second: {fileID: 2100000, guid: 773e3e2f1583830488145ce42481a0a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Mat3d66-1436288-96-8287
+    second: {fileID: 2100000, guid: 1439e72df963c6b4f9ee937c83159cdc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Material #20
+    second: {fileID: 2100000, guid: be311cb0de690b947919d920573c48aa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Material #2127
+    second: {fileID: 2100000, guid: 222565e132d37f34e8098ca6d86f3f3a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Material #2128
+    second: {fileID: 2100000, guid: 8178634f6127697489bda278892e0553, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._Material #2143317128
+    second: {fileID: 2100000, guid: fae3cd633230a6f4e967f1c3799a097c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._VRayMtl
+    second: {fileID: 2100000, guid: 8ae2aa19bae82ed419d8281042c65da5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._dubledecker-bulb
+    second: {fileID: 2100000, guid: 58043eac783dedc46812d759229c3666, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._dubledecker-lens
+    second: {fileID: 2100000, guid: da1c80538a27fb141a5f54f9d76ed312, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._dubledecker-mirror
+    second: {fileID: 2100000, guid: c12f01e0866bddd40bf3d84a98a9f86e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._dubledecker-orange222
+    second: {fileID: 2100000, guid: 9a2bb090fff8ec84e83d7dfca1c56167, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lime._dubledecker-plastic
+    second: {fileID: 2100000, guid: 498114e276304b942993df6d07c47614, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert103
+    second: {fileID: 2100000, guid: d3943c8e85cb804408ffa521396220c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert104
+    second: {fileID: 2100000, guid: 813b864c1046305408effc1618295591, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert105
+    second: {fileID: 2100000, guid: 222adbba6b95e084d8dcf2a8f32c8ebb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert106
+    second: {fileID: 2100000, guid: 61ae3a9fd2efa9748a756a28e1d1f495, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert83
+    second: {fileID: 2100000, guid: 561d150f37f424445b559158b16001c0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert84
+    second: {fileID: 2100000, guid: 78ae8f9652501ac419acb12e16075332, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert85
+    second: {fileID: 2100000, guid: 255dcb4b790d972429b70f695f0a43c9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert86
+    second: {fileID: 2100000, guid: 24500f2da76284a4a868cc2a77b8e4d5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert92
+    second: {fileID: 2100000, guid: 6c96163c0528a694e912e13155fb7df5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert97
+    second: {fileID: 2100000, guid: 0e2d093e03c24334291c55581c2bb653, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert98
+    second: {fileID: 2100000, guid: 22991c441c5b2a840a73cfb0ae26e290, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert99
+    second: {fileID: 2100000, guid: ee7db775afca5ab4a9d513b1427a04e8, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
