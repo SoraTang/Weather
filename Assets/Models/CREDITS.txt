@@ -1,0 +1,11 @@
+==============================
+ASSET CREDITS
+==============================
+
+[1] Market AL_DANUBE
+Source: https://sketchfab.com/3d-models/market-al-danube-3151143934b141929d30797787464b46
+License: CC BY 4.0
+
+[2] Japanese Convenience Store
+Source: https://assetstore.unity.com/packages/3d/environments/japanese-convenience-store-195956
+License: 
