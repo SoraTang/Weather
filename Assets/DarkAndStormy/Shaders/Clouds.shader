@@ -43,14 +43,23 @@
 
 	SubShader
 	{
-		Tags { "RenderType"="Opaque" }
+		Tags
+		{
+			"Queue"="Background"
+			"RenderType"="Opaque"
+			"PreviewType"="Skybox"
+		}
+
 		LOD 100
+		Cull Off
+		ZWrite Off
 
 		Pass
 		{
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile_instancing
 			
 			#include "UnityCG.cginc"
 			#define SKYBOX
@@ -96,18 +105,42 @@
 			float _ColPow;
 			float _ColFactor;
 
+			struct appdata
+			{
+				float4 vertex : POSITION;
+
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				float3 worldPos : TEXCOORD0; 
+				float3 worldPos : TEXCOORD0;
+
+				UNITY_VERTEX_OUTPUT_STEREO
 			};
 			
-			v2f vert (appdata_full v)
+			v2f vert(appdata v)
 			{
 				v2f o;
+
+				UNITY_SETUP_INSTANCE_ID(v);
+				UNITY_INITIALIZE_OUTPUT(v2f, o);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+
 				return o;
+			}
+
+			float3 GetStereoCameraWorldPosition()
+			{
+				#if defined(USING_STEREO_MATRICES)
+					return unity_StereoWorldSpaceCameraPos[unity_StereoEyeIndex];
+				#else
+					return _WorldSpaceCameraPos;
+				#endif
 			}
 
 			half4 SampleClouds(float3 uv, half3 sunTrans, half densityAdd)
@@ -211,8 +244,13 @@
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
-				// Generate a view direction from the world position of the skybox mesh
-				float3 viewDir = normalize(IN.worldPos - _WorldSpaceCameraPos);
+				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
+				float3 cameraWorldPos = GetStereoCameraWorldPosition();
+
+				// Generate a view direction from the world position of the skybox mesh.
+				// In XR Single Pass Instanced, use the per-eye camera position.
+				float3 viewDir = normalize(IN.worldPos - cameraWorldPos);
 
 				// Get the falloff to the horizon
 				float viewFalloff = 1.0 - saturate(dot(viewDir, float3(0, 1, 0)));
@@ -222,8 +260,8 @@
 
 				// Generate UVs from the world position of the sky
 				float3 worldPos =
-					_WorldSpaceCameraPos
-					+ traceDir * ((_CloudHeight - _WorldSpaceCameraPos.y) / max(traceDir.y, 0.00001));
+					cameraWorldPos
+					+ traceDir * ((_CloudHeight - cameraWorldPos.y) / max(traceDir.y, 0.00001));
 
 				float3 uv = float3(worldPos.xz * 0.01 * _Scale, 0);
 
@@ -244,7 +282,7 @@
 
 				// Figure out how far to move through the UVs for each parallax step
 				half3 uvStep =
-					half3(traceDir.xz * _BumpOffset * (1.0 / traceDir.y), 1.0)
+					half3(traceDir.xz * _BumpOffset * (1.0 / max(traceDir.y, 0.00001)), 1.0)
 					* (1.0 / effectiveSteps);
 
 				// Replaces per-pixel sin random with a fixed offset.

@@ -1,4 +1,3 @@
-
 Shader "Rain/RainScroller"
 {
     Properties
@@ -7,9 +6,11 @@ Shader "Rain/RainScroller"
         _Distortion("Distortion", Float) = 0.01
         _Tiling("Tiling", Vector) = (1,1,0,0)
         _Tint("Tint", Color) = (0.8809185,0.9188843,0.9245283,1)
+
         _Droplets_Strength("Droplets_Strength", Range( 0 , 1)) = 1
         _DropletThreshold("Droplet Threshold", Range(0,1)) = 0.65
         _DropletSoftness("Droplet Threshold Softness", Range(0,0.5)) = 0.04
+
         _RivuletMask("Rivulet Mask", 2D) = "white" {}
         _GlobalRotation("Global Rotation", Range( -180 , 180)) = 0
         _RivuletRotation("Rivulet Rotation", Range( -180 , 180)) = 0
@@ -17,6 +18,15 @@ Shader "Rain/RainScroller"
         _RivuletsStrength("Rivulets Strength", Range( 0 , 3)) = 1
         _DropletsGravity("Droplets Gravity", Range( 0 , 1)) = 0
         _DropletsStrikeSpeed("Droplets Strike Speed", Range( 0 , 2)) = 0.3
+
+        // 新增：颜色控制贴图，用来模拟街灯、霓虹灯、车灯被雨滴折射出来的颜色
+        _ColorControlMap("Color Control Map / Light Refraction Map", 2D) = "black" {}
+        _ColorControlIntensity("Color Control Intensity", Range(0, 5)) = 1.2
+        _ColorControlPower("Color Control Power", Range(0.2, 5)) = 1.5
+        _ColorControlDistortion("Color Control Distortion", Range(0, 2)) = 0.8
+        _ColorControlScroll("Color Control Scroll XY", Vector) = (0,0,0,0)
+        _RainColorMaskStrength("Rain Color Mask Strength", Range(0, 5)) = 2.0
+
         [HideInInspector] _texcoord( "", 2D ) = "white" {}
         [HideInInspector] __dirty( "", Int ) = 1
     }
@@ -65,24 +75,38 @@ Shader "Rain/RainScroller"
 
             TEXTURE2D(_DropletMask);
             SAMPLER(sampler_DropletMask);
+
             TEXTURE2D(_RivuletMask);
             SAMPLER(sampler_RivuletMask);
+
+            TEXTURE2D(_ColorControlMap);
+            SAMPLER(sampler_ColorControlMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _DropletMask_ST;
                 float4 _RivuletMask_ST;
+                float4 _ColorControlMap_ST;
+
                 float _Distortion;
                 float2 _Tiling;
                 float4 _Tint;
+
                 float _Droplets_Strength;
                 float _DropletThreshold;
                 float _DropletSoftness;
+
                 float _GlobalRotation;
                 float _RivuletRotation;
                 float _RivuletSpeed;
                 float _RivuletsStrength;
                 float _DropletsGravity;
                 float _DropletsStrikeSpeed;
+
+                float _ColorControlIntensity;
+                float _ColorControlPower;
+                float _ColorControlDistortion;
+                float4 _ColorControlScroll;
+                float _RainColorMaskStrength;
             CBUFFER_END
 
             float2 RotateUV(float2 uv, float degrees)
@@ -95,9 +119,6 @@ Shader "Rain/RainScroller"
 
             float4 SampleGradient_Original(float timeValue)
             {
-                // Original gradient in the ASE shader:
-                // color: white at 0.8500038 -> black at 1
-                // alpha: 1 throughout. Only the red channel is used.
                 float t = saturate((timeValue - 0.8500038) / max(0.00001, 1.0 - 0.8500038));
                 return float4(lerp(float3(1,1,1), float3(0,0,0), t), 1.0);
             }
@@ -125,14 +146,15 @@ Shader "Rain/RainScroller"
                 float4 dropletSample = SAMPLE_TEXTURE2D(_DropletMask, sampler_DropletMask, dropletUV);
 
                 // Threshold the droplet texture so gray/noisy background does not become active rain.
-                // Black/no-drops should become 0; bright droplet areas remain active.
                 float dropletLuma = dot(dropletSample.rgb, float3(0.299, 0.587, 0.114));
                 float dropletMask = smoothstep(
                     _DropletThreshold,
                     min(_DropletThreshold + max(_DropletSoftness, 0.0001), 1.0),
                     dropletLuma
                 );
+
                 dropletSample *= dropletMask;
+
                 float4 dropletVector = dropletSample * 2.0 - 1.0;
                 dropletVector = float4(dropletVector.r, dropletVector.g, 0.0, 0.0);
 
@@ -168,13 +190,44 @@ Shader "Rain/RainScroller"
 
                 float4 distortionVector = activeDroplets + rivuletVector * _RivuletsStrength * gradientMask;
 
-                // URP replacement for Built-in GrabPass:
-                // sample the camera opaque texture, distorted by the rain masks.
+                // ----- Screen refraction -----
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
                 screenUV += distortionVector.xy * _Distortion;
 
                 half3 sceneColor = SampleSceneColor(screenUV);
-                half3 finalColor = sceneColor * _Tint.rgb;
+
+                // ----- Color Control Map -----
+                // 使用屏幕空间采样颜色控制贴图，让它更像“街上的灯光被玻璃/雨滴折射”
+                float2 colorUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
+
+                // 颜色贴图也跟随雨滴扭曲，强化折射感
+                colorUV += distortionVector.xy * _Distortion * _ColorControlDistortion;
+
+                // 允许颜色贴图轻微流动，适合车灯、街灯、城市雨夜
+                colorUV += _ColorControlScroll.xy * time;
+
+                float4 colorControl = SAMPLE_TEXTURE2D(
+                    _ColorControlMap,
+                    sampler_ColorControlMap,
+                    TRANSFORM_TEX(colorUV, _ColorControlMap)
+                );
+
+                // 控制颜色只主要出现在雨滴和水痕区域
+                float rainColorMask = saturate(
+                    dropletMask * activation +
+                    dot(abs(rivuletVector.xy), float2(0.5, 0.5)) * _RivuletsStrength * gradientMask
+                );
+
+                rainColorMask = saturate(rainColorMask * _RainColorMaskStrength);
+
+                // 用贴图自身亮度控制发光强度，黑色区域不会明显影响画面
+                float colorLuma = dot(colorControl.rgb, float3(0.299, 0.587, 0.114));
+                float lightMask = pow(saturate(colorLuma * colorControl.a), _ColorControlPower);
+
+                half3 refractedLightColor = colorControl.rgb * lightMask * rainColorMask * _ColorControlIntensity;
+
+                // 最终颜色：原始折射画面 + 雨滴上的灯光颜色
+                half3 finalColor = sceneColor * _Tint.rgb + refractedLightColor;
 
                 return half4(finalColor, 1.0);
             }

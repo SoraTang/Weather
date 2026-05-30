@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2473329179805833271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5221496532796748132}
+  - component: {fileID: 3107353735159698038}
+  - component: {fileID: 5511265641231591836}
+  - component: {fileID: 5722512490886707123}
+  - component: {fileID: 105425396768170541}
+  m_Layer: 0
+  m_Name: SceneClassifierTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5221496532796748132
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473329179805833271}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.97761345, y: 4.6140633, z: -1.675293}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3107353735159698038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473329179805833271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80177c2a56939564898063b8d699577e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5511265641231591836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473329179805833271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a0b9d0bd0d26534a827be22da2980d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transitionSceneName: TestScene
+  classroomSceneName: ClassroomScene
+  carBackseatSceneName: CarBackseatScene
+  convenienceStoreSceneName: ConvenienceStoreScene
+  bedroomSceneName: BedroomScene
+--- !u!114 &5722512490886707123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473329179805833271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e04de347ddd2954dbbddecadb446470, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoRestartDictation: 1
+  enableDebugLog: 1
+  activeOnlyInSceneName: TestScene
+  autoLoadScene: 1
+  useLLMClassifier: 1
+  silenceConfirmDelay: 4.5
+  initialSilenceTimeout: 10
+  autoSilenceTimeout: 2.8
+--- !u!114 &105425396768170541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473329179805833271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e5b79b0b8ea4934bbe3734398ba8e41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classifyUrl: http://localhost:3000/classify
+  enableDebugLog: 1

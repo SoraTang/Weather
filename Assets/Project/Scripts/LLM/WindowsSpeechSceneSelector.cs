@@ -11,31 +11,40 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
     [Header("Active Scene Limit")]
     [Tooltip("只有在这个场景中才会启动和处理语音识别。请填写你的中转场景名。")]
-    public string activeOnlyInSceneName = "TransitionScene";
+    public string activeOnlyInSceneName = "TestScene";
 
     [Header("Scene Selection")]
     public bool autoLoadScene = true;
 
+    [Header("LLM Settings")]
+    [Tooltip("开启后优先使用 LLM 分类；失败时自动回退到本地关键词规则。")]
+    public bool useLLMClassifier = true;
+
     [Header("Sentence End Detection")]
-    [Tooltip("识别到文字后，再等待多少秒才认为玩家说完。")]
-    public float silenceConfirmDelay = 2.0f;
+    [Tooltip("收到一段识别结果后，再等待多少秒才认为玩家回答结束。期间如果继续说话，会重新计时。")]
+    public float silenceConfirmDelay = 4.5f;
 
-    [Tooltip("玩家开始说话前最多等待多久。")]
-    public float initialSilenceTimeout = 10f;
+    [Tooltip("开始监听后，玩家开始说话前最多可以沉默多久。")]
+    public float initialSilenceTimeout = 15f;
 
-    [Tooltip("玩家停顿多久后，Windows 认为一句话结束。")]
-    public float autoSilenceTimeout = 1.8f;
+    [Tooltip("玩家停顿多久后，Windows 认为一小段语音结束，并返回一次识别结果。")]
+    public float autoSilenceTimeout = 2.8f;
 
     private DictationRecognizer dictationRecognizer;
 
     private bool isRestarting = false;
     private bool hasRouted = false;
+    private bool isProcessingRoute = false;
 
-    private string pendingText = "";
+    // 多段语音累积文本
+    private string accumulatedText = "";
+    private string lastSegmentText = "";
+
     private Coroutine pendingRouteCoroutine;
 
     private SimpleSceneClassifier classifier;
     private MemorySceneRouter router;
+    private LLMSceneClassifier llmClassifier;
 
     void Start()
     {
@@ -51,6 +60,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             router = gameObject.AddComponent<MemorySceneRouter>();
         }
 
+        llmClassifier = GetComponent<LLMSceneClassifier>();
+        if (llmClassifier == null)
+        {
+            llmClassifier = gameObject.AddComponent<LLMSceneClassifier>();
+        }
+
         DebugLog("Speech supported: " + PhraseRecognitionSystem.isSupported);
         DebugLog("Speech status before start: " + PhraseRecognitionSystem.Status);
         DebugLog("当前场景：" + SceneManager.GetActiveScene().name);
@@ -60,7 +75,8 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         if (IsInActiveScene())
         {
-            CreateAndStartDictation();
+            // 初次进入中转场景，清空旧文本并开始监听
+            CreateAndStartDictation(true);
         }
         else
         {
@@ -73,7 +89,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         return SceneManager.GetActiveScene().name == activeOnlyInSceneName;
     }
 
-    private void CreateAndStartDictation()
+    private void CreateAndStartDictation(bool resetAccumulatedText = true)
     {
         if (!IsInActiveScene())
         {
@@ -84,6 +100,17 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         if (dictationRecognizer != null)
         {
             CleanupDictation();
+        }
+
+        hasRouted = false;
+        isProcessingRoute = false;
+
+        // 只有初次开始监听时清空文本
+        // 自动重启监听时不清空，避免 TimeoutExceeded 后丢失前面识别到的内容
+        if (resetAccumulatedText)
+        {
+            accumulatedText = "";
+            lastSegmentText = "";
         }
 
         dictationRecognizer = new DictationRecognizer();
@@ -115,7 +142,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        // Hypothesis 是实时猜测结果，只用于调试显示，不在这里切场景
+        // Hypothesis 是实时猜测结果，只用于调试显示，不参与最终分类
         DebugLog("Hypothesis: " + text);
     }
 
@@ -127,7 +154,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        if (hasRouted)
+        if (hasRouted || isProcessingRoute)
         {
             return;
         }
@@ -146,14 +173,34 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        pendingText = normalized;
+        // 避免 Windows 偶尔重复返回同一句
+        if (normalized == lastSegmentText)
+        {
+            DebugLog("检测到重复语音片段，忽略：" + normalized);
+            return;
+        }
 
-        DebugLog("暂存识别文本：" + pendingText);
+        lastSegmentText = normalized;
+
+        // 核心逻辑：不覆盖，而是把多段识别结果累积起来
+        if (string.IsNullOrWhiteSpace(accumulatedText))
+        {
+            accumulatedText = normalized;
+        }
+        else
+        {
+            accumulatedText += "，" + normalized;
+        }
+
+        DebugLog("新增语音片段：" + normalized);
+        DebugLog("当前累积文本：" + accumulatedText);
         DebugLog("等待玩家是否继续说话...");
 
+        // 每次收到新片段，都重新开始最终确认倒计时
         if (pendingRouteCoroutine != null)
         {
             StopCoroutine(pendingRouteCoroutine);
+            pendingRouteCoroutine = null;
         }
 
         pendingRouteCoroutine = StartCoroutine(RouteAfterSilence());
@@ -169,12 +216,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             yield break;
         }
 
-        if (hasRouted)
+        if (hasRouted || isProcessingRoute)
         {
             yield break;
         }
 
-        string finalText = pendingText;
+        string finalText = accumulatedText;
 
         if (string.IsNullOrWhiteSpace(finalText))
         {
@@ -182,19 +229,80 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             yield break;
         }
 
-        hasRouted = true;
+        isProcessingRoute = true;
 
-        DebugLog("玩家句子结束，最终用于分类的文本：" + finalText);
+        DebugLog("玩家回答结束，最终发送给 LLM 的完整文本：" + finalText);
 
-        MemorySceneType result = classifier.Classify(finalText);
-
-        DebugLog("语音场景分类结果：" + result);
-
-        StopListeningBeforeSceneLoad();
-
-        if (autoLoadScene)
+        if (useLLMClassifier && llmClassifier != null)
         {
-            router.LoadSceneByType(result);
+            DebugLog("开始调用 LLM 分类...");
+
+            llmClassifier.Classify(
+                finalText,
+                (sceneType, llmResult) =>
+                {
+                    if (hasRouted)
+                    {
+                        return;
+                    }
+
+                    hasRouted = true;
+                    isProcessingRoute = false;
+
+                    DebugLog("LLM 分类完成。");
+                    DebugLog("LLM scene: " + llmResult.scene);
+                    DebugLog("LLM confidence: " + llmResult.confidence);
+                    DebugLog("LLM reason: " + llmResult.reason);
+
+                    StopListeningBeforeSceneLoad();
+
+                    if (autoLoadScene)
+                    {
+                        router.LoadSceneByType(sceneType);
+                    }
+                },
+                (error) =>
+                {
+                    if (hasRouted)
+                    {
+                        return;
+                    }
+
+                    Debug.LogWarning("LLM 分类失败，改用本地关键词规则：" + error);
+
+                    MemorySceneType fallbackResult = classifier.Classify(finalText);
+
+                    hasRouted = true;
+                    isProcessingRoute = false;
+
+                    DebugLog("本地规则分类结果：" + fallbackResult);
+
+                    StopListeningBeforeSceneLoad();
+
+                    if (autoLoadScene)
+                    {
+                        router.LoadSceneByType(fallbackResult);
+                    }
+                }
+            );
+        }
+        else
+        {
+            DebugLog("未启用 LLM，使用本地关键词规则。");
+
+            MemorySceneType result = classifier.Classify(finalText);
+
+            hasRouted = true;
+            isProcessingRoute = false;
+
+            DebugLog("本地规则分类结果：" + result);
+
+            StopListeningBeforeSceneLoad();
+
+            if (autoLoadScene)
+            {
+                router.LoadSceneByType(result);
+            }
         }
     }
 
@@ -225,7 +333,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        if (hasRouted)
+        if (hasRouted || isProcessingRoute)
         {
             return;
         }
@@ -234,7 +342,10 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         if (!gameObject.activeInHierarchy) return;
         if (isRestarting) return;
 
-        RestartDictation();
+        // 这里不要清空 accumulatedText
+        // TimeoutExceeded 经常发生在识别到一句话之后
+        // 我们要保留前面已经识别到的内容，继续等待玩家是否补充下一句
+        RestartDictationWithoutClearingText();
     }
 
     private void OnDictationError(string error, int hresult)
@@ -246,23 +357,24 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        if (hasRouted)
+        if (hasRouted || isProcessingRoute)
         {
             return;
         }
 
         if (autoRestartDictation && gameObject.activeInHierarchy && !isRestarting)
         {
-            RestartDictation();
+            // 出错后也保留已经累积的文本，避免前半句丢失
+            RestartDictationWithoutClearingText();
         }
     }
 
-    private void RestartDictation()
+    private void RestartDictationWithoutClearingText()
     {
-        StartCoroutine(RestartNextFrame());
+        StartCoroutine(RestartNextFrameWithoutClearingText());
     }
 
-    private IEnumerator RestartNextFrame()
+    private IEnumerator RestartNextFrameWithoutClearingText()
     {
         isRestarting = true;
 
@@ -270,9 +382,10 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         yield return null;
 
-        if (gameObject.activeInHierarchy && !hasRouted && IsInActiveScene())
+        if (gameObject.activeInHierarchy && !hasRouted && !isProcessingRoute && IsInActiveScene())
         {
-            CreateAndStartDictation();
+            // false 表示：重启监听，但不清空已经累积的语音文本
+            CreateAndStartDictation(false);
         }
 
         isRestarting = false;
@@ -287,6 +400,9 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         }
 
         CleanupDictation();
+
+        accumulatedText = "";
+        lastSegmentText = "";
 
         DebugLog("即将切换场景，已停止语音监听。");
     }
