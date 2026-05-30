@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
 
 public class CarTrafficUnit : MonoBehaviour
 {
     [Header("Car Settings")]
-    public float travelDuration = 4.0f;   // 从起点到终点总共需要多久
+    public float travelDuration = 4.0f;
     public float arriveThreshold = 0.01f;
     public bool destroyOnArrive = true;
 
@@ -12,6 +13,8 @@ public class CarTrafficUnit : MonoBehaviour
     private float timer = 0f;
     private bool initialized = false;
     private bool arrived = false;
+
+    public Action onArrived;
 
     public void Initialize(Transform targetEndPoint)
     {
@@ -45,7 +48,10 @@ public class CarTrafficUnit : MonoBehaviour
 
     private void Arrive()
     {
+        if (arrived) return;
         arrived = true;
+
+        onArrived?.Invoke();
 
         if (destroyOnArrive)
         {

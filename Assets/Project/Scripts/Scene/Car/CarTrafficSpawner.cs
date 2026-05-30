@@ -1,89 +1,136 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CarTrafficSpawner : MonoBehaviour
 {
-    [Header("Car Prefabs")]
-    public GameObject[] carPrefabs;
+    [Header("Car Spawn Entries")]
+    public CarSpawnEntry[] carEntries;
 
     [Header("Traffic Lanes")]
     public TrafficLane[] lanes;
 
-    [Header("Timing")]
+    [Header("Global Settings")]
     public bool autoLoop = true;
     public bool startWithRandomDelay = true;
-    public float minInterval = 6f;
-    public float maxInterval = 14f;
 
     [Header("Audio Link")]
     public ConvenienceStoreAutoDoor door;
 
+    // 记录每条车道当前是否有车
+    private Dictionary<int, GameObject> laneOccupiedCars = new Dictionary<int, GameObject>();
+
     private void Start()
     {
-        if (autoLoop)
+        if (!autoLoop) return;
+
+        // 初始化每条车道占用表
+        for (int i = 0; i < lanes.Length; i++)
         {
-            StartCoroutine(SpawnLoop());
+            laneOccupiedCars[i] = null;
+        }
+
+        // 每种车各自启动一个独立循环
+        for (int i = 0; i < carEntries.Length; i++)
+        {
+            if (carEntries[i] != null && carEntries[i].prefab != null)
+            {
+                StartCoroutine(SpawnLoopForCar(carEntries[i]));
+            }
         }
     }
 
-    private IEnumerator SpawnLoop()
+    private IEnumerator SpawnLoopForCar(CarSpawnEntry entry)
     {
+        if (entry == null || entry.prefab == null)
+            yield break;
+
+        entry.isRunning = true;
+
         if (startWithRandomDelay)
         {
-            yield return new WaitForSeconds(Random.Range(minInterval, maxInterval));
+            yield return new WaitForSeconds(Random.Range(entry.minInterval, entry.maxInterval));
         }
 
         while (autoLoop)
         {
-            SpawnRandomCar();
+            TrySpawnSpecificCar(entry);
 
-            float waitTime = Random.Range(minInterval, maxInterval);
+            float waitTime = Random.Range(entry.minInterval, entry.maxInterval);
             yield return new WaitForSeconds(waitTime);
         }
     }
 
-    public void SpawnRandomCar()
+    private void TrySpawnSpecificCar(CarSpawnEntry entry)
     {
-        if (carPrefabs == null || carPrefabs.Length == 0)
-        {
-            Debug.LogWarning("CarTrafficSpawner: 没有设置 carPrefabs。");
-            return;
-        }
-
         if (lanes == null || lanes.Length == 0)
         {
             Debug.LogWarning("CarTrafficSpawner: 没有设置 lanes。");
             return;
         }
 
-        GameObject selectedPrefab = carPrefabs[Random.Range(0, carPrefabs.Length)];
-        TrafficLane selectedLane = lanes[Random.Range(0, lanes.Length)];
+        // 收集当前空闲车道
+        List<int> availableLaneIndices = new List<int>();
 
-        if (selectedLane.startPoint == null || selectedLane.endPoint == null)
+        for (int i = 0; i < lanes.Length; i++)
         {
-            Debug.LogWarning($"CarTrafficSpawner: 车道 {selectedLane.laneName} 的起点或终点未设置。");
+            if (lanes[i] == null || lanes[i].startPoint == null || lanes[i].endPoint == null)
+                continue;
+
+            if (laneOccupiedCars[i] == null)
+            {
+                availableLaneIndices.Add(i);
+            }
+        }
+
+        if (availableLaneIndices.Count == 0)
+        {
+            // 所有车道都占用时，本轮跳过
             return;
         }
+
+        int selectedLaneIndex = availableLaneIndices[Random.Range(0, availableLaneIndices.Count)];
+        TrafficLane selectedLane = lanes[selectedLaneIndex];
 
         Vector3 spawnPos = selectedLane.startPoint.position;
         Quaternion spawnRot = selectedLane.startPoint.rotation;
 
-        GameObject newCar = Instantiate(selectedPrefab, spawnPos, spawnRot);
+        // 如果是反向车道，模型额外绕Y旋转180度
+        if (selectedLane.reverseModelY180)
+        {
+            spawnRot = spawnRot * Quaternion.Euler(0f, 180f, 0f);
+        }
 
+        GameObject newCar = Instantiate(entry.prefab, spawnPos, spawnRot);
+
+        // 标记该车道已占用
+        laneOccupiedCars[selectedLaneIndex] = newCar;
+
+        // 初始化移动车辆
         CarTrafficUnit unit = newCar.GetComponent<CarTrafficUnit>();
         if (unit != null)
         {
             unit.Initialize(selectedLane.endPoint);
+            unit.onArrived += () => OnCarArrived(selectedLaneIndex, newCar);
         }
         else
         {
-            Debug.LogWarning("CarTrafficSpawner: 生成的车 prefab 没有 CarTrafficUnit。");
+            Debug.LogWarning($"CarTrafficSpawner: {entry.carName} prefab 没有 CarTrafficUnit。");
         }
 
+        // 绑定门音量联动
         DoorReactiveCarAudio carAudio = newCar.GetComponentInChildren<DoorReactiveCarAudio>();
         if (carAudio != null)
         {
             carAudio.door = door;
+        }
+    }
+
+    private void OnCarArrived(int laneIndex, GameObject arrivedCar)
+    {
+        if (laneOccupiedCars.ContainsKey(laneIndex) && laneOccupiedCars[laneIndex] == arrivedCar)
+        {
+            laneOccupiedCars[laneIndex] = null;
         }
     }
 }
