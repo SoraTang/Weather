@@ -83,10 +83,10 @@ MonoBehaviour:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {r: 0.13725494, g: 0.3620807, b: 0.40392157, a: 1}
+    m_Value: {r: 0.16264686, g: 0.3663494, b: 0.4056604, a: 1}
   highlights:
     m_OverrideState: 1
-    m_Value: {r: 1, g: 0.7389948, b: 0.495283, a: 1}
+    m_Value: {r: 1, g: 0.7252024, b: 0.5801887, a: 1}
   balance:
     m_OverrideState: 1
     m_Value: -5
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccf1aba9553839d41ae37dd52e9ebcce, type: 3}
   m_Name: MotionBlur
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 0
     m_Value: 0
@@ -185,7 +185,7 @@ MonoBehaviour:
     m_Value: 0.59
   intensity:
     m_OverrideState: 1
-    m_Value: 9.59
+    m_Value: 20
   scatter:
     m_OverrideState: 1
     m_Value: 0.693
@@ -194,7 +194,7 @@ MonoBehaviour:
     m_Value: 65472
   tint:
     m_OverrideState: 1
-    m_Value: {r: 1, g: 0.9699099, b: 0.8254717, a: 1}
+    m_Value: {r: 1, g: 0.86291265, b: 0.6556604, a: 1}
   highQualityFiltering:
     m_OverrideState: 0
     m_Value: 0
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c01700fd266d6914ababb731e09af2eb, type: 3}
   m_Name: DepthOfField
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 1
     m_Value: 1

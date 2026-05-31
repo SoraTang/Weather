@@ -12,6 +12,12 @@ public class ExternalThunderPlayer : MonoBehaviour
     [Tooltip("文件需放在 Assets/StreamingAssets/Audio/ 下")]
     public string thunderFileName = "thunder.wav";
 
+    [Header("启动设置")]
+    public bool playOnStart = true;
+
+    [Tooltip("延迟几秒后播放，避免设备刚初始化时没出声。")]
+    public float startDelay = 0.5f;
+
     [Header("音量")]
     [Range(0f, 1f)]
     public float volume = 1.0f;
@@ -39,6 +45,11 @@ public class ExternalThunderPlayer : MonoBehaviour
         };
 
         Debug.Log($"[ExternalThunderPlayer] 外部雷声输出设备设置完成，设备编号：{outputDeviceIndex}");
+
+        if (playOnStart)
+        {
+            Invoke(nameof(PlayThunder), startDelay);
+        }
     }
 
     public void PlayThunder()
@@ -128,6 +139,7 @@ public class ExternalThunderPlayer : MonoBehaviour
 
     private void OnDestroy()
     {
+        CancelInvoke();
         StopThunder();
 
         if (outputDevice != null)
