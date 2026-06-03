@@ -1,4 +1,3 @@
-
 Shader "Rain/RainScroller"
 {
     Properties
@@ -44,6 +43,10 @@ Shader "Rain/RainScroller"
             #pragma vertex vert
             #pragma fragment frag
 
+            // XR / Single Pass Instanced support
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
 
@@ -52,6 +55,8 @@ Shader "Rain/RainScroller"
                 float4 positionOS : POSITION;
                 float2 uv         : TEXCOORD0;
                 float3 normalOS   : NORMAL;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
@@ -59,10 +64,14 @@ Shader "Rain/RainScroller"
                 float4 positionHCS : SV_POSITION;
                 float2 uv          : TEXCOORD0;
                 float3 normalWS    : TEXCOORD1;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             TEXTURE2D(_DropletMask);
             SAMPLER(sampler_DropletMask);
+
             TEXTURE2D(_RivuletMask);
             SAMPLER(sampler_RivuletMask);
 
@@ -101,15 +110,25 @@ Shader "Rain/RainScroller"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
                 VertexPositionInputs posInputs = GetVertexPositionInputs(IN.positionOS.xyz);
+
                 OUT.positionHCS = posInputs.positionCS;
                 OUT.uv = IN.uv;
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
+
                 return OUT;
             }
 
             half4 frag(Varyings IN) : SV_Target
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
                 float time = _Time.y;
 
                 // ----- Droplets -----
@@ -157,9 +176,12 @@ Shader "Rain/RainScroller"
                 // URP replacement for Built-in GrabPass:
                 // sample the camera opaque texture, distorted by the rain masks.
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
-                screenUV += distortionVector.xy * _Distortion;
+                float2 refractUV = screenUV + distortionVector.xy * _Distortion;
 
-                half3 sceneColor = SampleSceneColor(screenUV);
+                // Required for XR Single Pass Instanced / double-wide camera opaque texture.
+                float2 stereoRefractUV = UnityStereoTransformScreenSpaceTex(refractUV);
+
+                half3 sceneColor = SampleSceneColor(stereoRefractUV);
                 half3 finalColor = sceneColor * _Tint.rgb;
 
                 return half4(finalColor, 1.0);

@@ -19,7 +19,6 @@ Shader "Rain/RainScroller"
         _DropletsGravity("Droplets Gravity", Range( 0 , 1)) = 0
         _DropletsStrikeSpeed("Droplets Strike Speed", Range( 0 , 2)) = 0.3
 
-        // 新增：颜色控制贴图，用来模拟街灯、霓虹灯、车灯被雨滴折射出来的颜色
         _ColorControlMap("Color Control Map / Light Refraction Map", 2D) = "black" {}
         _ColorControlIntensity("Color Control Intensity", Range(0, 5)) = 1.2
         _ColorControlPower("Color Control Power", Range(0.2, 5)) = 1.5
@@ -56,6 +55,10 @@ Shader "Rain/RainScroller"
             #pragma vertex vert
             #pragma fragment frag
 
+            // XR / Single Pass Instanced support
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
 
@@ -64,6 +67,8 @@ Shader "Rain/RainScroller"
                 float4 positionOS : POSITION;
                 float2 uv         : TEXCOORD0;
                 float3 normalOS   : NORMAL;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
@@ -71,6 +76,9 @@ Shader "Rain/RainScroller"
                 float4 positionHCS : SV_POSITION;
                 float2 uv          : TEXCOORD0;
                 float3 normalWS    : TEXCOORD1;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             TEXTURE2D(_DropletMask);
@@ -126,15 +134,25 @@ Shader "Rain/RainScroller"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
                 VertexPositionInputs posInputs = GetVertexPositionInputs(IN.positionOS.xyz);
+
                 OUT.positionHCS = posInputs.positionCS;
                 OUT.uv = IN.uv;
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
+
                 return OUT;
             }
 
             half4 frag(Varyings IN) : SV_Target
             {
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
                 float time = _Time.y;
 
                 // ----- Droplets -----
@@ -191,19 +209,19 @@ Shader "Rain/RainScroller"
                 float4 distortionVector = activeDroplets + rivuletVector * _RivuletsStrength * gradientMask;
 
                 // ----- Screen refraction -----
+                // GetNormalizedScreenSpaceUV gives eye-local screen UV.
+                // In Single Pass Instanced / double-wide XR textures, camera opaque texture must be stereo-adjusted before sampling.
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
-                screenUV += distortionVector.xy * _Distortion;
+                float2 refractUV = screenUV + distortionVector.xy * _Distortion;
+                float2 stereoRefractUV = UnityStereoTransformScreenSpaceTex(refractUV);
 
-                half3 sceneColor = SampleSceneColor(screenUV);
+                half3 sceneColor = SampleSceneColor(stereoRefractUV);
 
                 // ----- Color Control Map -----
-                // 使用屏幕空间采样颜色控制贴图，让它更像“街上的灯光被玻璃/雨滴折射”
-                float2 colorUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
-
-                // 颜色贴图也跟随雨滴扭曲，强化折射感
+                // This texture is NOT _CameraOpaqueTexture, so keep it in eye-local 0-1 UV.
+                // This makes both eyes sample the same color control area instead of sampling only half/double-wide space.
+                float2 colorUV = screenUV;
                 colorUV += distortionVector.xy * _Distortion * _ColorControlDistortion;
-
-                // 允许颜色贴图轻微流动，适合车灯、街灯、城市雨夜
                 colorUV += _ColorControlScroll.xy * time;
 
                 float4 colorControl = SAMPLE_TEXTURE2D(

@@ -14,7 +14,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
     public string activeOnlyInSceneName = "TestScene";
 
     [Header("Listening Control")]
-    [Tooltip("是否进入场景后自动开始监听。正式流程建议关闭，由旁白结束后调用 StartListening。")]
+    [Tooltip("是否进入场景后自动开始监听。正式流程建议关闭，由旁白结束前调用 StartListening。")]
     public bool autoStartListening = false;
 
     [Header("Scene Selection")]
@@ -30,11 +30,11 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
     public bool useLLMClassifier = true;
 
     [Header("Speech End Detection")]
-    [Tooltip("最后一次检测到语音后，持续沉默多少秒才判定玩家说完。建议 6-8 秒。")]
-    public float finalSilenceToSubmit = 7.0f;
+    [Tooltip("最后一次检测到语音后，持续沉默多少秒才判定玩家说完。建议 5-8 秒。")]
+    public float finalSilenceToSubmit = 6.0f;
 
-    [Tooltip("开始监听后至少等待多少秒，避免刚启动就误判结束。")]
-    public float minimumListeningDuration = 2.0f;
+    [Tooltip("第一次检测到语音后，至少等待多少秒，才允许判定玩家说完。")]
+    public float minimumDurationAfterFirstSpeech = 2.0f;
 
     [Tooltip("是否在最终发送时，把最新的 Hypothesis 也作为备份文本合并进去。建议开启。")]
     public bool includeLatestHypothesisOnSubmit = true;
@@ -60,7 +60,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
     private bool isListening = false;
     private bool heardAnySpeech = false;
 
-    private float listeningStartTime = -1f;
+    private float firstSpeechHeardTime = -1f;
     private float lastSpeechHeardTime = -1f;
 
     private string accumulatedText = "";
@@ -172,7 +172,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             lastSegmentText = "";
             latestHypothesisText = "";
             heardAnySpeech = false;
-            listeningStartTime = Time.time;
+            firstSpeechHeardTime = -1f;
             lastSpeechHeardTime = -1f;
         }
 
@@ -219,14 +219,16 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         while (!hasRouted && !isProcessingRoute && IsInActiveScene())
         {
-            if (heardAnySpeech && lastSpeechHeardTime > 0f)
+            if (heardAnySpeech && firstSpeechHeardTime > 0f && lastSpeechHeardTime > 0f)
             {
                 float silenceDuration = Time.time - lastSpeechHeardTime;
-                float listeningDuration = Time.time - listeningStartTime;
+                float durationAfterFirstSpeech = Time.time - firstSpeechHeardTime;
 
-                if (listeningDuration >= minimumListeningDuration && silenceDuration >= finalSilenceToSubmit)
+                if (durationAfterFirstSpeech >= minimumDurationAfterFirstSpeech &&
+                    silenceDuration >= finalSilenceToSubmit)
                 {
                     DebugLog("检测到长时间沉默，判定玩家说完。沉默时长：" + silenceDuration);
+                    DebugLog("第一次说话后经过时长：" + durationAfterFirstSpeech);
 
                     silenceMonitorCoroutine = null;
                     SubmitAccumulatedTextToLLM();
@@ -317,6 +319,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
     private void MarkSpeechHeard()
     {
+        if (!heardAnySpeech)
+        {
+            firstSpeechHeardTime = Time.time;
+            DebugLog("第一次检测到语音，开始计算最短有效聆听时间。");
+        }
+
         heardAnySpeech = true;
         lastSpeechHeardTime = Time.time;
     }
@@ -605,6 +613,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         lastSegmentText = "";
         latestHypothesisText = "";
         heardAnySpeech = false;
+        firstSpeechHeardTime = -1f;
         lastSpeechHeardTime = -1f;
 
         DebugLog("已停止语音监听。");
