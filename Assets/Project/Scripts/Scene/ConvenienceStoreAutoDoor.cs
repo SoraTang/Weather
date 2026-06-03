@@ -29,8 +29,16 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
     public Vector3 rightOpenDirection = Vector3.right;
 
     [Header("Outdoor Audio Link")]
-    [Range(0f, 1f)]
-    public float DoorExposure01 = 0f;   // 0 = 门完全关，1 = 门完全开
+    [Range(0f, 1f)] public float DoorExposure01 = 0f;
+
+    [Header("Fan Control")]
+    public ThreeFanSerialController fanController;
+
+    [Range(0, 255)] public int leftFanOpenValue = 255;
+    [Range(0, 255)] public int leftFanClosedValue = 0;
+
+    [Tooltip("只控制左风机，中间和右边保持当前值不变")]
+    public bool keepOtherFansUnchanged = true;
 
     private Vector3 leftClosedPos;
     private Vector3 rightClosedPos;
@@ -38,6 +46,9 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
     private Vector3 rightOpenedPos;
 
     private bool isMoving = false;
+
+    private int currentCenterFan = 0;
+    private int currentRightFan = 0;
 
     private void Start()
     {
@@ -48,6 +59,11 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
             return;
         }
 
+        if (fanController == null)
+        {
+            fanController = FindObjectOfType<ThreeFanSerialController>();
+        }
+
         leftClosedPos = leftDoor.localPosition;
         rightClosedPos = rightDoor.localPosition;
 
@@ -55,6 +71,13 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
         rightOpenedPos = rightClosedPos + rightOpenDirection.normalized * openDistance;
 
         DoorExposure01 = 0f;
+
+        if (fanController != null)
+        {
+            currentCenterFan = fanController.centerFan;
+            currentRightFan = fanController.rightFan;
+            SetLeftFan(leftFanClosedValue);
+        }
 
         if (autoLoop)
         {
@@ -80,14 +103,14 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
 
     public IEnumerator OpenAndCloseOnce()
     {
-        if (isMoving)
-            yield break;
-
+        if (isMoving) yield break;
         isMoving = true;
 
         PlayDoorCycleSound();
 
-        // 开门：0 -> 1
+        // 开始开门：左风机直接变为最大
+        SetLeftFan(leftFanOpenValue);
+
         yield return StartCoroutine(MoveDoors(
             leftClosedPos,
             leftOpenedPos,
@@ -98,11 +121,12 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
             1f
         ));
 
-        // 保持开启：1
         DoorExposure01 = 1f;
         yield return new WaitForSeconds(stayOpenTime);
 
-        // 关门：1 -> 0
+        // 开始关门：左风机直接降为0
+        SetLeftFan(leftFanClosedValue);
+
         yield return StartCoroutine(MoveDoors(
             leftOpenedPos,
             leftClosedPos,
@@ -132,6 +156,7 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
         while (timer < duration)
         {
             timer += Time.deltaTime;
+
             float t = Mathf.Clamp01(timer / duration);
             float smoothT = Mathf.SmoothStep(0f, 1f, t);
 
@@ -148,10 +173,24 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
         DoorExposure01 = exposureTo;
     }
 
+    private void SetLeftFan(int leftValue)
+    {
+        if (fanController == null) return;
+
+        leftValue = Mathf.Clamp(leftValue, 0, 255);
+
+        if (keepOtherFansUnchanged)
+        {
+            currentCenterFan = fanController.centerFan;
+            currentRightFan = fanController.rightFan;
+        }
+
+        fanController.SetFans(leftValue, currentCenterFan, currentRightFan);
+    }
+
     private void PlayDoorCycleSound()
     {
-        if (audioSource == null || openSound == null)
-            return;
+        if (audioSource == null || openSound == null) return;
 
         if (playSoundOnlyWhenOpening)
         {
@@ -165,5 +204,10 @@ public class ConvenienceStoreAutoDoor : MonoBehaviour
         {
             StartCoroutine(OpenAndCloseOnce());
         }
+    }
+
+    private void OnDisable()
+    {
+        SetLeftFan(leftFanClosedValue);
     }
 }

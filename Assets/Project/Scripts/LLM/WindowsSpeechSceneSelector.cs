@@ -7,14 +7,24 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 {
     [Header("Debug")]
     public bool autoRestartDictation = true;
-    public bool enableDebugLog = true;
+    public bool enableDebugLog = false;
 
     [Header("Active Scene Limit")]
     [Tooltip("只有在这个场景中才会启动和处理语音识别。请填写你的中转场景名。")]
     public string activeOnlyInSceneName = "TestScene";
 
+    [Header("Warmup")]
+    [Tooltip("进入目标场景后是否自动预热语音识别器。建议开启。")]
+    public bool prewarmOnStart = true;
+
+    [Tooltip("进入场景后延迟多久开始预热，避免和场景初始化同帧。")]
+    public float prewarmDelay = 0.5f;
+
+    [Tooltip("识别器完成/异常后，延迟多久再重启，避免同帧抖动。")]
+    public float restartDelay = 0.2f;
+
     [Header("Listening Control")]
-    [Tooltip("是否进入场景后自动开始监听。正式流程建议关闭，由旁白结束前调用 StartListening。")]
+    [Tooltip("是否进入场景后自动开始接收玩家语音。正式流程建议关闭，由旁白结束前调用 StartListening。")]
     public bool autoStartListening = false;
 
     [Header("Scene Selection")]
@@ -54,10 +64,15 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
     private DictationRecognizer dictationRecognizer;
 
+    private bool isRecognizerPrepared = false;
+    private bool isRecognizerRunning = false;
     private bool isRestarting = false;
+
     private bool hasRouted = false;
     private bool isProcessingRoute = false;
-    private bool isListening = false;
+
+    // 这一层才是“当前是否接收玩家这一次的输入”
+    private bool isCaptureWindowOpen = false;
     private bool heardAnySpeech = false;
 
     private float firstSpeechHeardTime = -1f;
@@ -68,6 +83,8 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
     private string latestHypothesisText = "";
 
     private Coroutine silenceMonitorCoroutine;
+    private Coroutine restartCoroutine;
+    private Coroutine prewarmCoroutine;
 
     private SimpleSceneClassifier classifier;
     private MemorySceneRouter router;
@@ -98,27 +115,59 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             transitionAudioTimeline = GetComponent<TransitionAudioTimeline>();
         }
 
-        DebugLog("Speech supported: " + PhraseRecognitionSystem.isSupported);
-        DebugLog("Speech status before start: " + PhraseRecognitionSystem.Status);
-        DebugLog("当前场景：" + SceneManager.GetActiveScene().name);
-
         PhraseRecognitionSystem.OnError += OnSpeechError;
         PhraseRecognitionSystem.OnStatusChanged += OnSpeechStatusChanged;
 
-        if (IsInActiveScene())
+        if (!IsInActiveScene())
         {
-            if (autoStartListening)
-            {
-                CreateAndStartDictation(true);
-            }
-            else
-            {
-                DebugLog("当前在中转场景，但 Auto Start Listening 关闭，等待外部脚本启动监听。");
-            }
+            DebugLog("当前不在中转场景，不预热语音识别。");
+            return;
         }
-        else
+
+        if (prewarmOnStart)
         {
-            DebugLog("当前不在中转场景，不启动语音监听。");
+            prewarmCoroutine = StartCoroutine(PrewarmRoutine());
+        }
+        else if (autoStartListening)
+        {
+            // 不预热但又要自动接收时，退化为直接启动
+            StartListening();
+        }
+    }
+
+    public void PrepareRecognizer()
+    {
+        if (!IsInActiveScene()) return;
+        if (isRecognizerPrepared || prewarmCoroutine != null) return;
+
+        prewarmCoroutine = StartCoroutine(PrewarmRoutine());
+    }
+
+    private IEnumerator PrewarmRoutine()
+    {
+        yield return new WaitForSeconds(prewarmDelay);
+
+        if (!IsInActiveScene())
+        {
+            prewarmCoroutine = null;
+            yield break;
+        }
+
+        EnsureRecognizerCreated();
+
+        StartRecognizerIfNeeded();
+
+        // 预热阶段不接收玩家输入
+        CloseCaptureWindowOnly();
+
+        isRecognizerPrepared = true;
+        prewarmCoroutine = null;
+
+        DebugLog("语音识别器预热完成。");
+
+        if (autoStartListening)
+        {
+            OpenCaptureWindow();
         }
     }
 
@@ -130,14 +179,15 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
             return;
         }
 
-        if (isListening || dictationRecognizer != null)
+        EnsureRecognizerCreated();
+
+        if (!isRecognizerRunning)
         {
-            DebugLog("语音监听已经存在，不重复启动。");
-            return;
+            StartRecognizerIfNeeded();
         }
 
-        DebugLog("外部触发：开始语音监听。");
-        CreateAndStartDictation(true);
+        OpenCaptureWindow();
+        DebugLog("开始接收玩家语音窗口。");
     }
 
     public void StopListening()
@@ -150,57 +200,81 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         return SceneManager.GetActiveScene().name == activeOnlyInSceneName;
     }
 
-    private void CreateAndStartDictation(bool resetAccumulatedText = true)
+    private void EnsureRecognizerCreated()
     {
-        if (!IsInActiveScene())
+        if (dictationRecognizer != null)
         {
-            DebugLog("当前不在中转场景，不启动语音监听。");
             return;
         }
 
-        if (dictationRecognizer != null)
+        dictationRecognizer = new DictationRecognizer
         {
-            CleanupDictation();
-        }
-
-        hasRouted = false;
-        isProcessingRoute = false;
-
-        if (resetAccumulatedText)
-        {
-            accumulatedText = "";
-            lastSegmentText = "";
-            latestHypothesisText = "";
-            heardAnySpeech = false;
-            firstSpeechHeardTime = -1f;
-            lastSpeechHeardTime = -1f;
-        }
-
-        dictationRecognizer = new DictationRecognizer();
-
-        dictationRecognizer.InitialSilenceTimeoutSeconds = initialSilenceTimeout;
-        dictationRecognizer.AutoSilenceTimeoutSeconds = autoSilenceTimeout;
+            InitialSilenceTimeoutSeconds = initialSilenceTimeout,
+            AutoSilenceTimeoutSeconds = autoSilenceTimeout
+        };
 
         dictationRecognizer.DictationHypothesis += OnDictationHypothesis;
         dictationRecognizer.DictationResult += OnDictationResult;
         dictationRecognizer.DictationComplete += OnDictationComplete;
         dictationRecognizer.DictationError += OnDictationError;
 
+        DebugLog("DictationRecognizer 已创建。");
+    }
+
+    private void StartRecognizerIfNeeded()
+    {
+        if (dictationRecognizer == null)
+        {
+            return;
+        }
+
+        if (isRecognizerRunning)
+        {
+            return;
+        }
+
         try
         {
             dictationRecognizer.Start();
-            isListening = true;
+            isRecognizerRunning = true;
 
-            DebugLog("Dictation started.");
-            DebugLog("Speech status after start: " + PhraseRecognitionSystem.Status);
-
-            StartSilenceMonitorIfNeeded();
+            DebugLog("Dictation recognizer started.");
         }
         catch (System.Exception e)
         {
+            isRecognizerRunning = false;
             Debug.LogError("启动 DictationRecognizer 失败: " + e.Message);
-            isListening = false;
         }
+    }
+
+    private void OpenCaptureWindow()
+    {
+        hasRouted = false;
+        isProcessingRoute = false;
+
+        accumulatedText = "";
+        lastSegmentText = "";
+        latestHypothesisText = "";
+        heardAnySpeech = false;
+        firstSpeechHeardTime = -1f;
+        lastSpeechHeardTime = -1f;
+
+        isCaptureWindowOpen = true;
+
+        StartSilenceMonitorIfNeeded();
+    }
+
+    private void CloseCaptureWindowOnly()
+    {
+        isCaptureWindowOpen = false;
+        StopSilenceMonitor();
+
+        accumulatedText = "";
+        lastSegmentText = "";
+        latestHypothesisText = "";
+        heardAnySpeech = false;
+        firstSpeechHeardTime = -1f;
+        lastSpeechHeardTime = -1f;
     }
 
     private void StartSilenceMonitorIfNeeded()
@@ -215,9 +289,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
     private IEnumerator SilenceMonitorRoutine()
     {
-        DebugLog("语音结束监测启动。");
-
-        while (!hasRouted && !isProcessingRoute && IsInActiveScene())
+        while (isCaptureWindowOpen && !hasRouted && !isProcessingRoute && IsInActiveScene())
         {
             if (heardAnySpeech && firstSpeechHeardTime > 0f && lastSpeechHeardTime > 0f)
             {
@@ -227,9 +299,6 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
                 if (durationAfterFirstSpeech >= minimumDurationAfterFirstSpeech &&
                     silenceDuration >= finalSilenceToSubmit)
                 {
-                    DebugLog("检测到长时间沉默，判定玩家说完。沉默时长：" + silenceDuration);
-                    DebugLog("第一次说话后经过时长：" + durationAfterFirstSpeech);
-
                     silenceMonitorCoroutine = null;
                     SubmitAccumulatedTextToLLM();
                     yield break;
@@ -244,15 +313,9 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
     private void OnDictationHypothesis(string text)
     {
-        if (!IsInActiveScene())
-        {
-            return;
-        }
-
-        if (hasRouted || isProcessingRoute)
-        {
-            return;
-        }
+        if (!IsInActiveScene()) return;
+        if (!isCaptureWindowOpen) return;
+        if (hasRouted || isProcessingRoute) return;
 
         string normalized = NormalizeText(text);
 
@@ -263,35 +326,19 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         if (ShouldIgnoreText(normalized))
         {
-            DebugLog("Hypothesis 过短，忽略：" + normalized);
             return;
         }
 
         latestHypothesisText = normalized;
         MarkSpeechHeard();
-
-        DebugLog("Hypothesis: " + normalized);
     }
 
     private void OnDictationResult(string text, ConfidenceLevel confidence)
     {
-        if (!IsInActiveScene())
-        {
-            DebugLog("当前不在中转场景，忽略语音识别结果。");
-            return;
-        }
-
-        if (hasRouted || isProcessingRoute)
-        {
-            return;
-        }
-
-        DebugLog("Result: " + text + " | Confidence: " + confidence);
-
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return;
-        }
+        if (!IsInActiveScene()) return;
+        if (!isCaptureWindowOpen) return;
+        if (hasRouted || isProcessingRoute) return;
+        if (string.IsNullOrWhiteSpace(text)) return;
 
         string normalized = NormalizeText(text);
 
@@ -302,19 +349,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         if (ShouldIgnoreText(normalized))
         {
-            DebugLog("Result 过短，忽略：" + normalized);
             return;
         }
 
         MarkSpeechHeard();
-
         AddTextSegment(normalized);
-
         latestHypothesisText = "";
-
-        DebugLog("新增语音片段：" + normalized);
-        DebugLog("当前累积文本：" + accumulatedText);
-        DebugLog("等待更长沉默后统一发送...");
     }
 
     private void MarkSpeechHeard()
@@ -322,7 +362,6 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         if (!heardAnySpeech)
         {
             firstSpeechHeardTime = Time.time;
-            DebugLog("第一次检测到语音，开始计算最短有效聆听时间。");
         }
 
         heardAnySpeech = true;
@@ -338,7 +377,6 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         if (segment == lastSegmentText)
         {
-            DebugLog("检测到重复语音片段，忽略：" + segment);
             return;
         }
 
@@ -346,14 +384,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         {
             if (accumulatedText.Contains(segment))
             {
-                DebugLog("累积文本中已包含该片段，忽略：" + segment);
                 lastSegmentText = segment;
                 return;
             }
 
             if (segment.Contains(accumulatedText))
             {
-                DebugLog("新片段包含已有累积文本，使用更完整的新片段替换。");
                 accumulatedText = segment;
                 lastSegmentText = segment;
                 return;
@@ -384,25 +420,25 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         if (string.IsNullOrWhiteSpace(finalText))
         {
             DebugLog("最终文本为空，不执行分类。");
+            CloseCaptureWindowOnly();
             return;
         }
 
         if (ShouldIgnoreText(finalText))
         {
             DebugLog("最终文本过短，不执行分类：" + finalText);
+            CloseCaptureWindowOnly();
             return;
         }
 
         isProcessingRoute = true;
-
-        CleanupDictation();
+        isCaptureWindowOpen = false;
+        StopSilenceMonitor();
 
         DebugLog("玩家回答结束，最终发送给 LLM 的完整文本：" + finalText);
 
         if (useLLMClassifier && llmClassifier != null)
         {
-            DebugLog("开始调用 LLM 分类...");
-
             llmClassifier.Classify(
                 finalText,
                 (sceneType, llmResult) =>
@@ -414,12 +450,6 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
                     hasRouted = true;
                     isProcessingRoute = false;
-
-                    DebugLog("LLM 分类完成。");
-                    DebugLog("LLM scene: " + llmResult.scene);
-                    DebugLog("LLM confidence: " + llmResult.confidence);
-                    DebugLog("LLM reason: " + llmResult.reason);
-
                     HandleSceneResult(sceneType);
                 },
                 (error) =>
@@ -435,24 +465,16 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
                     hasRouted = true;
                     isProcessingRoute = false;
-
-                    DebugLog("本地规则分类结果：" + fallbackResult);
-
                     HandleSceneResult(fallbackResult);
                 }
             );
         }
         else
         {
-            DebugLog("未启用 LLM，使用本地关键词规则。");
-
             MemorySceneType result = classifier.Classify(finalText);
 
             hasRouted = true;
             isProcessingRoute = false;
-
-            DebugLog("本地规则分类结果：" + result);
-
             HandleSceneResult(result);
         }
     }
@@ -503,14 +525,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         if (transitionAudioTimeline != null)
         {
-            DebugLog("将目标场景交给 TransitionAudioTimeline：" + sceneType);
             transitionAudioTimeline.BeginOutroAndLoadScene(sceneType);
             return;
         }
 
         if (autoLoadScene)
         {
-            DebugLog("未绑定 TransitionAudioTimeline，直接切换场景：" + sceneType);
             router.LoadSceneByType(sceneType);
         }
         else
@@ -540,83 +560,71 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
     private void OnDictationComplete(DictationCompletionCause cause)
     {
         DebugLog("Dictation complete: " + cause);
+        isRecognizerRunning = false;
 
-        isListening = false;
-
-        if (!IsInActiveScene())
-        {
-            return;
-        }
-
-        if (hasRouted || isProcessingRoute)
-        {
-            return;
-        }
-
+        if (!IsInActiveScene()) return;
+        if (hasRouted || isProcessingRoute) return;
         if (!autoRestartDictation) return;
         if (!gameObject.activeInHierarchy) return;
         if (isRestarting) return;
 
-        RestartDictationWithoutClearingText();
+        ScheduleRestart();
     }
 
     private void OnDictationError(string error, int hresult)
     {
         Debug.LogError("Dictation error: " + error + " | HResult: " + hresult);
+        isRecognizerRunning = false;
 
-        isListening = false;
+        if (!IsInActiveScene()) return;
+        if (hasRouted || isProcessingRoute) return;
+        if (!autoRestartDictation) return;
+        if (!gameObject.activeInHierarchy) return;
+        if (isRestarting) return;
 
-        if (!IsInActiveScene())
-        {
-            return;
-        }
-
-        if (hasRouted || isProcessingRoute)
-        {
-            return;
-        }
-
-        if (autoRestartDictation && gameObject.activeInHierarchy && !isRestarting)
-        {
-            RestartDictationWithoutClearingText();
-        }
+        ScheduleRestart();
     }
 
-    private void RestartDictationWithoutClearingText()
+    private void ScheduleRestart()
     {
-        StartCoroutine(RestartNextFrameWithoutClearingText());
+        if (restartCoroutine != null)
+        {
+            StopCoroutine(restartCoroutine);
+        }
+
+        restartCoroutine = StartCoroutine(RestartRecognizerRoutine());
     }
 
-    private IEnumerator RestartNextFrameWithoutClearingText()
+    private IEnumerator RestartRecognizerRoutine()
     {
         isRestarting = true;
 
-        CleanupDictation();
-
-        yield return null;
+        yield return new WaitForSeconds(restartDelay);
 
         if (gameObject.activeInHierarchy && !hasRouted && !isProcessingRoute && IsInActiveScene())
         {
-            CreateAndStartDictation(false);
+            StartRecognizerIfNeeded();
         }
 
+        restartCoroutine = null;
         isRestarting = false;
     }
 
     private void StopListeningBeforeSceneLoad()
     {
-        StopSilenceMonitor();
+        CloseCaptureWindowOnly();
 
-        CleanupDictation();
+        try
+        {
+            if (dictationRecognizer != null && isRecognizerRunning)
+            {
+                dictationRecognizer.Stop();
+            }
+        }
+        catch { }
 
-        accumulatedText = "";
-        lastSegmentText = "";
-        latestHypothesisText = "";
-        heardAnySpeech = false;
-        firstSpeechHeardTime = -1f;
-        lastSpeechHeardTime = -1f;
-
-        DebugLog("已停止语音监听。");
+        isRecognizerRunning = false;
+        DebugLog("已停止接收玩家语音。");
     }
 
     private void StopSilenceMonitor()
@@ -638,11 +646,11 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         DebugLog("Speech status changed: " + status);
     }
 
-    private void CleanupDictation()
+    private void CleanupRecognizer()
     {
         if (dictationRecognizer == null)
         {
-            isListening = false;
+            isRecognizerRunning = false;
             return;
         }
 
@@ -653,7 +661,7 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         try
         {
-            if (dictationRecognizer.Status == SpeechSystemStatus.Running)
+            if (isRecognizerRunning)
             {
                 dictationRecognizer.Stop();
             }
@@ -662,9 +670,12 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
 
         dictationRecognizer.Dispose();
         dictationRecognizer = null;
-        isListening = false;
+        isRecognizerRunning = false;
+        isRecognizerPrepared = false;
     }
 
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
     private void DebugLog(string msg)
     {
         if (enableDebugLog)
@@ -678,7 +689,17 @@ public class WindowsSpeechSceneSelector : MonoBehaviour
         PhraseRecognitionSystem.OnError -= OnSpeechError;
         PhraseRecognitionSystem.OnStatusChanged -= OnSpeechStatusChanged;
 
+        if (restartCoroutine != null)
+        {
+            StopCoroutine(restartCoroutine);
+        }
+
+        if (prewarmCoroutine != null)
+        {
+            StopCoroutine(prewarmCoroutine);
+        }
+
         StopSilenceMonitor();
-        CleanupDictation();
+        CleanupRecognizer();
     }
 }

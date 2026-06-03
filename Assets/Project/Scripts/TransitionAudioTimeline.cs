@@ -24,6 +24,15 @@ public class TransitionAudioTimeline : MonoBehaviour
     [Header("Scene Router")]
     public MemorySceneRouter sceneRouter;
 
+    [Header("Fan Control")]
+    public ThreeFanSerialController fanController;
+
+    [Range(0, 255)]
+    public int transitionFanMaxPwm = 255;
+
+    [Tooltip("风机是否跟随雨量一起增强，并在转场前降为0")]
+    public bool enableFanFadeWithRain = true;
+
     [Header("Rain Particle Systems")]
     public ParticleSystem[] rainDropParticles;
     public ParticleSystem[] splashParticles;
@@ -102,14 +111,17 @@ public class TransitionAudioTimeline : MonoBehaviour
 
     [Header("Debug")]
     public bool playOnStart = true;
-    public bool enableDebugLog = true;
+    public bool enableDebugLog = false;
 
     private Coroutine timelineCoroutine;
     private Coroutine particleFadeCoroutine;
+    private Coroutine fanFadeCoroutine;
     private Coroutine outroCoroutine;
 
     private bool outroStarted = false;
     private bool listeningStarted = false;
+
+    private int currentFanPwm = 0;
 
     void Start()
     {
@@ -123,9 +135,16 @@ public class TransitionAudioTimeline : MonoBehaviour
             speechSelector = GetComponent<WindowsSpeechSceneSelector>();
         }
 
+        if (fanController == null)
+        {
+            fanController = FindObjectOfType<ThreeFanSerialController>();
+        }
+
         SetupAudioSources();
         SetupParticleSystems();
         SetupFadePanel();
+
+        SetAllTransitionFans(0);
 
         if (playOnStart)
         {
@@ -195,8 +214,16 @@ public class TransitionAudioTimeline : MonoBehaviour
             StopCoroutine(particleFadeCoroutine);
         }
 
+        if (fanFadeCoroutine != null)
+        {
+            StopCoroutine(fanFadeCoroutine);
+        }
+
         outroStarted = false;
         listeningStarted = false;
+        currentFanPwm = 0;
+
+        SetAllTransitionFans(0);
 
         timelineCoroutine = StartCoroutine(AudioTimelineRoutine());
     }
@@ -233,6 +260,16 @@ public class TransitionAudioTimeline : MonoBehaviour
             DebugLog("雨声音频1开始播放。");
 
             particleFadeCoroutine = StartCoroutine(FadeRainParticlesInTwoStages());
+
+            if (enableFanFadeWithRain)
+            {
+                float totalRainFadeDuration = lowRateFadeDuration + highRateFadeDuration;
+                fanFadeCoroutine = StartCoroutine(FadeAllTransitionFans(
+                    0,
+                    transitionFanMaxPwm,
+                    totalRainFadeDuration
+                ));
+            }
 
             yield return StartCoroutine(FadeVolume(
                 rainIntroSource,
@@ -425,6 +462,7 @@ public class TransitionAudioTimeline : MonoBehaviour
         Coroutine rainFade = null;
         Coroutine introFade = null;
         Coroutine narrationFade = null;
+        Coroutine fanFade = null;
 
         if (fadePanel != null)
         {
@@ -461,6 +499,20 @@ public class TransitionAudioTimeline : MonoBehaviour
             ));
         }
 
+        if (enableFanFadeWithRain)
+        {
+            if (fanFadeCoroutine != null)
+            {
+                StopCoroutine(fanFadeCoroutine);
+            }
+
+            fanFade = StartCoroutine(FadeAllTransitionFans(
+                currentFanPwm,
+                0,
+                audioFadeOutDuration
+            ));
+        }
+
         float outroRemainingTime = 0f;
 
         if (outroNarrationSource != null && outroNarrationSource.clip != null)
@@ -493,6 +545,13 @@ public class TransitionAudioTimeline : MonoBehaviour
         {
             yield return narrationFade;
         }
+
+        if (fanFade != null)
+        {
+            yield return fanFade;
+        }
+
+        SetAllTransitionFans(0);
 
         yield return new WaitForSeconds(waitBeforeSceneLoad);
 
@@ -569,6 +628,49 @@ public class TransitionAudioTimeline : MonoBehaviour
 
         SetEmissionRate(rainDropParticles, rainDropTo);
         SetEmissionRate(splashParticles, splashTo);
+    }
+
+    private IEnumerator FadeAllTransitionFans(int from, int to, float duration)
+    {
+        if (fanController == null)
+        {
+            DebugLog("Fan Controller 未绑定，跳过风机控制。");
+            yield break;
+        }
+
+        from = Mathf.Clamp(from, 0, 255);
+        to = Mathf.Clamp(to, 0, 255);
+
+        if (duration <= 0f)
+        {
+            SetAllTransitionFans(to);
+            yield break;
+        }
+
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+
+            int value = Mathf.RoundToInt(Mathf.Lerp(from, to, t));
+            SetAllTransitionFans(value);
+
+            yield return null;
+        }
+
+        SetAllTransitionFans(to);
+    }
+
+    private void SetAllTransitionFans(int value)
+    {
+        currentFanPwm = Mathf.Clamp(value, 0, 255);
+
+        if (fanController != null)
+        {
+            fanController.SetFans(currentFanPwm, currentFanPwm, currentFanPwm);
+        }
     }
 
     private void SetEmissionRate(ParticleSystem[] particleSystems, float rate)
@@ -656,6 +758,7 @@ public class TransitionAudioTimeline : MonoBehaviour
         {
             timer += Time.deltaTime;
             float t = Mathf.Clamp01(timer / duration);
+
             SetFadeAlpha(Mathf.Lerp(startAlpha, 1f, t));
             yield return null;
         }
@@ -675,6 +778,8 @@ public class TransitionAudioTimeline : MonoBehaviour
         fadePanel.color = color;
     }
 
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
     private void DebugLog(string message)
     {
         if (enableDebugLog)

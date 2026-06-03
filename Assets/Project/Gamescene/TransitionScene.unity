@@ -1157,6 +1157,18 @@ ParticleSystem:
     type: 3}
   m_PrefabInstance: {fileID: 844821344}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &789678667 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1312383938275552407, guid: 727803e7a668f5a4b913d49e4820c2a0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1573769511}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4927b57d5ab320a4fb565cf01a730e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &812391037
 GameObject:
   m_ObjectHideFlags: 0
@@ -1622,6 +1634,9 @@ MonoBehaviour:
   fadePanel: {fileID: 7531578712090471133}
   speechSelector: {fileID: 1596650887}
   sceneRouter: {fileID: 1596650888}
+  fanController: {fileID: 789678667}
+  transitionFanMaxPwm: 255
+  enableFanFadeWithRain: 1
   rainDropParticles:
   - {fileID: 1440762677}
   - {fileID: 947632622}
@@ -1654,7 +1669,7 @@ MonoBehaviour:
   rainCrossfadeStartTime: 10
   rainCrossfadeDuration: 4
   rainLoopTargetVolume: 1
-  narrationStartTime: 25
+  narrationStartTime: 20
   rainLoopDuckedVolume: 0.5
   rainDuckDuration: 3
   narrationTargetVolume: 0.6
@@ -1668,7 +1683,7 @@ MonoBehaviour:
   audioFadeOutDuration: 3
   waitBeforeSceneLoad: 0
   playOnStart: 1
-  enableDebugLog: 1
+  enableDebugLog: 0
 --- !u!4 &994656884
 Transform:
   m_ObjectHideFlags: 0
@@ -3024,6 +3039,84 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 0}
   m_ButtonPressPoint: 0.5
+--- !u!1001 &1573769511
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3682215328605784444, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_Name
+      value: FanController
+      objectReference: {fileID: 0}
+    - target: {fileID: 7077317322160350232, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: ExpandSPMonitor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7077317322160350232, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: DebugConsoleMonitor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8858176007006770610, guid: 727803e7a668f5a4b913d49e4820c2a0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 727803e7a668f5a4b913d49e4820c2a0, type: 3}
 --- !u!114 &1596650887 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5722512490886707123, guid: b33f4a1b56f3d0c4c8f9a4c99585b071,
@@ -4053,3 +4146,4 @@ SceneRoots:
   - {fileID: 976915404}
   - {fileID: 611906036}
   - {fileID: 55194125}
+  - {fileID: 1573769511}
