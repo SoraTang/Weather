@@ -6,11 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Project/Gamescene/TransitionScene.unity
+    guid: c5449e8ecdbb0a54fa262b5a13bbfee1
   - enabled: 1
-    path: Assets/Scenes/Scene2.unity
-    guid: 71a4d00c4731e1c46870f94a58d448ca
+    path: Assets/Project/Gamescene/BedroomScene.unity
+    guid: 1a2d9e58ea2113c4e9c73505b88b8bdc
+  - enabled: 1
+    path: Assets/Project/Gamescene/CarBackseatScene.unity
+    guid: ec1fdae2db1758440a6939eb8fe98093
+  - enabled: 1
+    path: Assets/Project/Gamescene/ClassroomScene.unity
+    guid: 34f65b4d6a1bdf34c9b4178858c9fc0d
+  - enabled: 1
+    path: Assets/Project/Gamescene/ConvenienceStoreScene.unity
+    guid: e38bdfdfd13bbe74c9100fe5fd23847d
   m_configObjects:
     Unity.XR.PICO.LivePreview.Settings: {fileID: 11400000, guid: 22479b1ff24b7744e8efa124e7f41c6c,
       type: 2}
